@@ -60,16 +60,11 @@
         <p class="text-sm text-gray-500">📞 Contact d'urgence</p>
         <p class="text-lg font-semibold">Sophie Dupont</p>
         <div class="flex flex-wrap gap-4 mt-3">
-          <a href="tel:+33611223344" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">📞 Appeler</a>
-          <button onclick="getCurrentLocation()" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border hover:bg-blue-200 transition">📍 Ma position en temps réel</button>
-          <button onclick="goToHome()" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg border hover:bg-green-200 transition">🏠 Maison</button>
+          <a href="tel:+33652805105" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">📞 Appeler</a>
+          <button onclick="openLiveDirection()" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border hover:bg-blue-200 transition">📍 Ma position en temps réel</button>
+          <!-- <button onclick="goToHome()" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg border hover:bg-green-200 transition">🏠 Maison</button> -->
+          <button onclick="goFromHereToHome()" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg border hover:bg-purple-200 transition">🚗 Itinéraire vers Maison</button>
         </div>
-      </div>
-
-      <div id="mapContainer" class="mt-6 hidden">
-        <p class="text-sm text-gray-500 mb-2">📍 Plan en temps réel</p>
-        <div id="loadingMessage" class="text-sm text-gray-500">Chargement de la carte...</div>
-        <iframe id="mapFrame" class="w-full h-64 rounded-xl border shadow-md hidden" loading="lazy" allowfullscreen></iframe>
       </div>
     </div>
 
@@ -79,31 +74,19 @@
   </div>
 
   <script>
-    function getCurrentLocation() {
-      const loading = document.getElementById("loadingMessage");
-      const mapFrame = document.getElementById("mapFrame");
-      const mapContainer = document.getElementById("mapContainer");
-
-      mapContainer.classList.remove("hidden");
-      loading.classList.remove("hidden");
-      mapFrame.classList.add("hidden");
-
+    function openLiveDirection() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          mapFrame.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
-          mapFrame.onload = () => {
-            loading.classList.add("hidden");
-            mapFrame.classList.remove("hidden");
-          };
+          const destination = `${lat},${lon}`;
+          const url = `https://www.google.com/maps?q=${destination}`;
+          window.open(url, '_blank');
         }, error => {
           alert("Impossible de récupérer votre position GPS.");
-          loading.classList.add("hidden");
         });
       } else {
         alert("La géolocalisation n'est pas supportée par ce navigateur.");
-        loading.classList.add("hidden");
       }
     }
 
@@ -112,6 +95,24 @@
       const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
       window.open(url, '_blank');
     }
+
+    function goFromHereToHome() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const origin = `${lat},${lon}`;
+          const destination = encodeURIComponent("3 Avenue Joseph Bédier, 75013 Paris");
+          const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+          window.open(url, '_blank');
+        }, error => {
+          alert("Impossible de récupérer votre position GPS.");
+        });
+      } else {
+        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+      }
+    }
   </script>
 </body>
 </html>
+
