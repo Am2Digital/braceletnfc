@@ -59,12 +59,35 @@
       <div>
         <p class="text-sm text-gray-500">📞 Contact d'urgence</p>
         <p class="text-lg font-semibold">Sophie Dupont</p>
-        <div class="flex flex-wrap gap-4 mt-3">
-          <a href="tel:+33652805105" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">📞 Appeler</a>
+        <p class="text-xs text-gray-500 mb-2">🔒 Pour utiliser la géolocalisation, veuillez autoriser l'accès à la position lorsque votre navigateur le demande.</p>
+        <div class="flex flex-wrap gap-4 mt-2">
+          <a href="tel:+33611223344" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">📞 Appeler</a>
           <button onclick="openLiveDirection()" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border hover:bg-blue-200 transition">📍 Ma position en temps réel</button>
-          <!-- <button onclick="goToHome()" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg border hover:bg-green-200 transition">🏠 Maison</button> -->
-          <button onclick="goFromHereToHome()" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg border hover:bg-purple-200 transition">🚗 Itinéraire vers Maison</button>
+          <button onclick="goToHome()" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg border hover:bg-green-200 transition">🏠 Maison</button>
+          <div>
+  <button onclick="goFromHereToHome()" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg border hover:bg-purple-200 transition">🚗 Itinéraire vers Maison</button>
+  <p class="text-xs mt-1"><a href="https://www.google.com/maps/place/3+avenue+Joseph+B%C3%A9dier,+75013+Paris" target="_blank" class="text-blue-600 underline">📍 3 avenue Joseph Bédier, 75013 Paris</a></p>
+</div>
         </div>
+      </div>
+
+      <div id="locationDisplay" class="mt-6 p-4 bg-blue-50 text-sm text-blue-900 rounded-lg hidden">
+        <p class="font-semibold mb-1">📡 Position actuelle :</p>
+        <p>Latitude : <span id="latDisplay">--</span></p>
+        <p>Longitude : <span id="lonDisplay">--</span></p>
+      </div>
+
+      $1
+        <p class="text-xs mt-2 italic text-red-700">ℹ️ Sur iPhone, allez dans : Réglages > Safari > Localisation > Autoriser</p>
+        ❌ Localisation non autorisée. <br>
+        👉 <a href="https://www.google.com/maps?q=48.8566,2.3522" target="_blank" class="underline font-semibold">Voir Paris centre sur la carte</a><br>
+        👉 <a href="app-settings:location" class="underline text-blue-700 font-semibold">Ouvrir les paramètres de localisation</a><br>
+        Ou entrez manuellement votre adresse :<br>
+        <div class="mt-2 flex gap-2">
+          <input id="manualAddress" type="text" placeholder="Ex : 10 rue Exemple, Paris" class="w-full border border-gray-300 rounded px-3 py-2">
+          <button onclick="openManualAddress()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">📍 Voir</button>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -79,14 +102,27 @@
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          const destination = `${lat},${lon}`;
-          const url = `https://www.google.com/maps?q=${destination}`;
+          document.getElementById("latDisplay").textContent = lat.toFixed(5);
+          document.getElementById("lonDisplay").textContent = lon.toFixed(5);
+          document.getElementById("locationDisplay").classList.remove("hidden");
+          document.getElementById("gpsError").classList.add("hidden");
+
+          const url = `https://www.google.com/maps?q=${lat},${lon}`;
           window.open(url, '_blank');
         }, error => {
-          alert("Impossible de récupérer votre position GPS.");
+          alert("⛔ L'accès à la géolocalisation a été refusé ou est désactivé. Veuillez l'autoriser dans les paramètres de votre navigateur.");
+          document.getElementById("gpsError").classList.remove("hidden");
         });
       } else {
-        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+        document.getElementById("gpsError").classList.remove("hidden");
+      }
+    }
+
+    function openManualAddress() {
+      const input = document.getElementById("manualAddress").value;
+      if (input.trim() !== '') {
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(input)}`;
+        window.open(url, '_blank');
       }
     }
 
@@ -106,13 +142,14 @@
           const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
           window.open(url, '_blank');
         }, error => {
-          alert("Impossible de récupérer votre position GPS.");
+          document.getElementById("gpsError").classList.remove("hidden");
         });
       } else {
-        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+        document.getElementById("gpsError").classList.remove("hidden");
       }
     }
   </script>
 </body>
 </html>
+
 
