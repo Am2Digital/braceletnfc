@@ -1,155 +1,290 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png" type="image/png">
+  <meta name="theme-color" content="#007bff">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fiche Santé+</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 20px;
     }
-    .fade-in {
-      animation: fadeIn 1.2s ease-in-out forwards;
-      opacity: 0;
+    .lang-toggle {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .lang-toggle button img {
+      width: 28px;
+      height: 20px;
+      border-radius: 0;
+      transition: transform 0.2s ease;
+      object-fit: contain;
+    }
+    .lang-toggle button:hover img {
+      transform: scale(1.2);
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+    .card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 123, 255, 0.15);
+      text-align: center;
+    }
+    .card h2 {
+      color: #007bff;
+    }
+    .card p {
+      text-align: left;
+      margin: 5px 0;
+    }
+    #chatbot {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 320px;
+      max-height: 400px;
+      padding: 15px;
+      overflow-y: auto;
+      display: none;
+    }
+    #chatbot-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #007bff;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    #chatbot-icon img {
+      width: 30px;
+      height: 30px;
+    }
+      @media (max-width: 480px) {
+      .card {
+        padding: 15px;
+        margin: 10px;
+      }
+      #chatbot {
+        width: 90%;
+        right: 5%;
+      }
+      #chatbot-icon {
+        bottom: 15px;
+        right: 15px;
+      }
+      .lang-toggle {
+        justify-content: center;
+        margin-bottom: 20px;
+      }
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen flex items-center justify-center p-6">
-  <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-xl w-full fade-in relative">
-    <div class="absolute top-4 right-4">
-      <lottie-player src="https://lottie.host/23935d69-3282-434b-a1e5-50289dbaccb3/duF07RxDXz.json" background="transparent" speed="1" style="width: 60px; height: 60px;" loop autoplay></lottie-player>
-    </div>
+<body>
+<script>
+  var currentLang = 'fr';
+  var voicesLoaded = false;
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => { voicesLoaded = true; };
+  }
+  function toggleChatbot() {
+    const chatbot = document.getElementById("chatbot");
+    if (chatbot && chatbot.style) {
+      chatbot.style.display = chatbot.style.display === "none" || chatbot.style.display === "" ? "block" : "none";
+    }
+  }
+  function switchLang(lang) {
+  traduireChatbotButtons(lang);
+  const name = document.getElementById('patient-name');
+  if (name) name.textContent = lang === 'fr' ? 'Alexandre Dupont' : lang === 'en' ? 'Alexander Dupont' : 'الكسندر دوبون';
+  currentLang = lang;
+  const maison = document.getElementById('btn-maison');
+  const doctolib = document.getElementById('btn-doctolib');
+  const urgence = document.getElementById('btn-urgence');
 
-    <div class="flex items-center space-x-4 mb-8">
-      <img src="https://i.pravatar.cc/100" alt="Photo Profil" class="w-24 h-24 rounded-full border-4 border-blue-200 shadow-md">
-      <div>
-        <h1 class="text-3xl font-extrabold text-blue-800">Alex Dupont</h1>
-        <p class="text-gray-600 text-sm">Fiche Santé Numérique</p>
-      </div>
-    </div>
+  if (maison) maison.textContent = lang === 'fr' ? '🏠 Itinéraire vers la maison' : lang === 'en' ? '🏠 Directions home' : '🏠 الاتجاه إلى المنزل';
+  if (doctolib) doctolib.textContent = lang === 'fr' ? '🩺 Prendre rendez-vous sur Doctolib' : lang === 'en' ? '🩺 Book on Doctolib' : '🩺 احجز موعدًا عبر Doctolib';
+  if (urgence) urgence.textContent = lang === 'fr' ? '🚨 Appel Urgence' : lang === 'en' ? '🚨 Emergency Call' : '🚨 اتصال طارئ';
 
-    <div class="space-y-6 text-gray-800">
-      <div>
-        <p class="text-sm text-gray-500">🩸 Groupe sanguin</p>
-        <p class="text-xl font-semibold">O+</p>
-      </div>
+  const labels = {
+    birthdate: {
+      fr: 'Date de naissance',
+      en: 'Date of Birth',
+      ar: 'تاريخ الميلاد'
+    },
+    blood: {
+      fr: 'Groupe sanguin',
+      en: 'Blood Group',
+      ar: 'فصيلة الدم'
+    },
+    allergies: {
+      fr: 'Allergies',
+      en: 'Allergies',
+      ar: 'الحساسيات'
+    },
+    patho: {
+      fr: 'Pathologies',
+      en: 'Conditions',
+      ar: 'الأمراض'
+    },
+    meds: {
+      fr: 'Médicaments',
+      en: 'Medications',
+      ar: 'الأدوية'
+    },
+    hist: {
+      fr: 'Antécédents',
+      en: 'Medical History',
+      ar: 'السجل الطبي'
+    },
+    sos: {
+      fr: "Numéro d'urgence",
+      en: 'Emergency Contact',
+      ar: 'رقم الطوارئ'
+    }
+  };
 
-      <div>
-        <p class="text-sm text-gray-500">🦠 Maladie chronique</p>
-        <p class="text-lg">Diabète de type 1</p>
-      </div>
+  const translations = document.querySelectorAll(".card p");
+  if (translations.length >= 7) {
+    translations[0].innerHTML = `<strong>${labels.birthdate[lang]} :</strong> ${lang === 'fr' ? '12/06/1980 (43 ans)' : lang === 'en' ? '06/12/1980 (43 y.o.)' : '12/06/1980 (43 عامًا)'}`;
+    translations[1].innerHTML = `<strong>${labels.blood[lang]} :</strong> O+`;
+    translations[2].innerHTML = `<strong>${labels.allergies[lang]} :</strong> ${lang === 'fr' ? 'Arachides, Pollen' : lang === 'en' ? 'Peanuts, Pollen' : 'فول سوداني، لقاح'};`
+    translations[3].innerHTML = `<strong>${labels.patho[lang]} :</strong> ${lang === 'fr' ? 'Diabète Type 2' : lang === 'en' ? 'Type 2 Diabetes' : 'داء السكري النوع 2'};`
+    translations[4].innerHTML = `<strong>${labels.meds[lang]} :</strong> ${lang === 'fr' ? 'Insuline, Paracétamol' : lang === 'en' ? 'Insulin, Paracetamol' : 'أنسولين، باراسيتامول'};`
+    translations[5].innerHTML = `<strong>${labels.hist[lang]} :</strong> ${lang === 'fr' ? 'Appendicectomie (2005), Hypertension' : lang === 'en' ? 'Appendectomy (2005), Hypertension' : 'استئصال الزائدة (2005)، ارتفاع ضغط الدم'};`
+    translations[6].innerHTML = `<strong>${labels.sos[lang]} :</strong> <a href='tel:+33652805105'>06 52 80 51 05</a>`;
+  }
+}
+</script>
 
-      <div>
-        <p class="text-sm text-gray-500">⚠️ Allergies</p>
-        <p class="text-lg">Arachides, Pénicilline</p>
-      </div>
-
-      <div>
-        <p class="text-sm text-gray-500">💊 Traitement en cours</p>
-        <p class="text-lg">Insuline quotidienne</p>
-      </div>
-
-      <div>
-        <p class="text-sm text-gray-500">📞 Contact d'urgence</p>
-        <p class="text-lg font-semibold">Sophie Dupont</p>
-        <p class="text-xs text-gray-500 mb-2">🔒 Pour utiliser la géolocalisation, veuillez autoriser l'accès à la position lorsque votre navigateur le demande.</p>
-        <div class="flex flex-wrap gap-4 mt-2">
-          <a href="tel:+33611223344" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">📞 Appeler</a>
-          <button onclick="openLiveDirection()" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border hover:bg-blue-200 transition">📍 Ma position en temps réel</button>
-          <button onclick="goToHome()" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg border hover:bg-green-200 transition">🏠 Maison</button>
-          <div>
-  <button onclick="goFromHereToHome()" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg border hover:bg-purple-200 transition">🚗 Itinéraire vers Maison</button>
-  <p class="text-xs mt-1"><a href="https://www.google.com/maps/place/3+avenue+Joseph+B%C3%A9dier,+75013+Paris" target="_blank" class="text-blue-600 underline">📍 3 avenue Joseph Bédier, 75013 Paris</a></p>
+<div class="lang-toggle">
+  <button onclick="switchLang('fr')" style="background: none; border: none; padding: 0;"><img src="france.png" alt="FR"></button>
+  <button onclick="switchLang('en')" style="background: none; border: none; padding: 0;"><img src="united-kingdom.png" alt="EN"></button>
+  <button onclick="switchLang('ar')" style="background: none; border: none; padding: 0;"><img src="saudi-arabia.png" alt="AR"></button>
 </div>
-        </div>
-      </div>
 
-      <div id="locationDisplay" class="mt-6 p-4 bg-blue-50 text-sm text-blue-900 rounded-lg hidden">
-        <p class="font-semibold mb-1">📡 Position actuelle :</p>
-        <p>Latitude : <span id="latDisplay">--</span></p>
-        <p>Longitude : <span id="lonDisplay">--</span></p>
-      </div>
+<div class="card">
+  <img src="papi.jpg" alt="Photo patient" style="display: block; margin: 0 auto 15px auto; width: 120px; height: 120px; border-radius: 50%;">
+  <h2 id="patient-name">Alexandre Dupont</h2>
+  <p><strong>Date de naissance :</strong> 12/06/1980 (43 ans)</p>
+  <p><strong>Groupe sanguin :</strong> O+</p>
+  <p><strong>Allergies :</strong> Arachides, Pollen</p>
+  <p><strong>Pathologies :</strong> Diabète Type 2</p>
+  <p><strong>Médicaments :</strong> Insuline, Paracétamol</p>
+  <p><strong>Antécédents :</strong> Appendicectomie (2005), Hypertension</p>
+  <p><strong>Numéro d'urgence :</strong> <a href='tel:+33652805105'>06 52 80 51 05</a></p>
+  <a id="btn-urgence" href="tel:112" style="display: block; background: red; color: white; text-align: center; padding: 10px; border-radius: 16px; margin-top: 10px; text-decoration: none; transition: background 0.3s ease;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">🚨 Appel Urgence</a>
+  <a id="btn-maison" href="https://www.google.com/maps/dir/?api=1&destination=3+Av+Joseph+Bedier+75013+Paris" target="_blank" style="display: block; background: #007bff; color: white; text-align: center; padding: 10px; border-radius: 16px; margin-top: 10px; text-decoration: none;">🏠 Itinéraire vers la maison</a>
+  <a id="btn-doctolib" href="https://www.doctolib.fr/" style="display: block; background: #28a745; color: white; text-align: center; padding: 10px; border-radius: 16px; margin-top: 10px; text-decoration: none;">🩺 Prendre rendez-vous sur Doctolib</a>
+</div>
 
-      $1
-        <p class="text-xs mt-2 italic text-red-700">ℹ️ Sur iPhone, allez dans : Réglages > Safari > Localisation > Autoriser</p>
-        ❌ Localisation non autorisée. <br>
-        👉 <a href="https://www.google.com/maps?q=48.8566,2.3522" target="_blank" class="underline font-semibold">Voir Paris centre sur la carte</a><br>
-        👉 <a href="app-settings:location" class="underline text-blue-700 font-semibold">Ouvrir les paramètres de localisation</a><br>
-        Ou entrez manuellement votre adresse :<br>
-        <div class="mt-2 flex gap-2">
-          <input id="manualAddress" type="text" placeholder="Ex : 10 rue Exemple, Paris" class="w-full border border-gray-300 rounded px-3 py-2">
-          <button onclick="openManualAddress()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">📍 Voir</button>
-        </div>
-      </div>
-      </div>
-    </div>
+<div id="chatbot">
+  <div id="chatbot-history"></div>
+  <textarea id="chat-input" placeholder="Posez votre question..." style="width: 100%; height: 50px; margin-top: 10px;"></textarea>
+  <button onclick="repondreQuestion()" style="margin-top: 5px;">Envoyer</button>
+  <button onclick="activerMicro()">🎤 Parler</button>
+  <button onclick="afficherQuestions()">📋 Voir les exemples de questions</button>
+  <div id="question-exemples" style="display:none;"></div>
+</div>
+<div id="chatbot-icon" onclick="toggleChatbot()">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="Chat">
+</div>
 
-    <div class="text-center mt-10 text-xs text-gray-400">
-      © 2025 Carte Santé+ — Données confidentielles accessibles uniquement via NFC ou QR sécurisé.
-    </div>
-  </div>
+<script>
+function repondreQuestion() {
+  const question = document.getElementById("chat-input").value.trim().toLowerCase();
+  const history = document.getElementById("chatbot-history");
+  let response;
 
-  <script>
-    function openLiveDirection() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          document.getElementById("latDisplay").textContent = lat.toFixed(5);
-          document.getElementById("lonDisplay").textContent = lon.toFixed(5);
-          document.getElementById("locationDisplay").classList.remove("hidden");
-          document.getElementById("gpsError").classList.add("hidden");
+  if (question.includes("fièvre") || question.includes("fever") || question.includes("حمى")) {
+    response = {
+      fr: "La fièvre est un symptôme courant. Buvez beaucoup d'eau et reposez-vous.",
+      en: "Fever is a common symptom. Drink plenty of water and rest.",
+      ar: "الحمى عرض شائع. اشرب الكثير من الماء واسترح."
+    }[currentLang];
+  } else if (question.includes("toux") || question.includes("cough") || question.includes("سعال")) {
+    response = {
+      fr: "Pour la toux, évitez le froid et buvez des infusions.",
+      en: "For cough, avoid cold drinks and take herbal tea.",
+      ar: "لعلاج السعال، تجنب المشروبات الباردة وخذ شاي أعشاب."
+    }[currentLang];
+  } else if (question.includes("douleur") || question.includes("pain") || question.includes("ألم")) {
+    response = {
+      fr: "En cas de douleur, reposez-vous et utilisez un antidouleur si nécessaire. Consultez un médecin si la douleur persiste.",
+      en: "If you're in pain, rest and take a painkiller if needed. Consult a doctor if the pain continues.",
+      ar: "في حال وجود ألم، استرح وخذ مسكنًا إذا لزم الأمر. راجع طبيبًا إذا استمر الألم."
+    }[currentLang];
+  } else if (question.includes("stress") || question.includes("anxiété") || question.includes("anxiety") || question.includes("توتر")) {
+    response = {
+      fr: "Essayez de respirer profondément et de vous détendre. Parlez à un professionnel de santé si cela persiste.",
+      en: "Try deep breathing and relaxation. Talk to a healthcare professional if it continues.",
+      ar: "حاول التنفس بعمق والاسترخاء. تحدث إلى مختص صحي إذا استمر الأمر."
+    }[currentLang];
+  } else {
+    response = {
+      fr: "Merci pour votre question. Je vous recommande de consulter un professionnel de santé.",
+      en: "Thank you for your question. I recommend seeing a healthcare professional.",
+      ar: "شكرًا على سؤالك. أنصحك بمراجعة مختص صحي."
+    }[currentLang];
+  }
 
-          const url = `https://www.google.com/maps?q=${lat},${lon}`;
-          window.open(url, '_blank');
-        }, error => {
-          alert("⛔ L'accès à la géolocalisation a été refusé ou est désactivé. Veuillez l'autoriser dans les paramètres de votre navigateur.");
-          document.getElementById("gpsError").classList.remove("hidden");
-        });
-      } else {
-        document.getElementById("gpsError").classList.remove("hidden");
-      }
-    }
+  history.innerHTML += `<p><strong>Vous :</strong> ${question}</p><p><strong>Bot :</strong> ${response}</p>`;
+  document.getElementById("chat-input").value = "";
+}
 
-    function openManualAddress() {
-      const input = document.getElementById("manualAddress").value;
-      if (input.trim() !== '') {
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(input)}`;
-        window.open(url, '_blank');
-      }
-    }
+function traduireChatbotButtons(lang) {
+  const sendBtn = document.querySelector("#chatbot button[onclick='repondreQuestion()']");
+  const voiceBtn = document.querySelector("#chatbot button[onclick='activerMicro()']");
+  const examplesBtn = document.querySelector("#chatbot button[onclick='afficherQuestions()']");
 
-    function goToHome() {
-      const destination = encodeURIComponent("3 Avenue Joseph Bédier, 75013 Paris");
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
-      window.open(url, '_blank');
-    }
+  if (sendBtn) sendBtn.textContent = lang === 'fr' ? 'Envoyer' : lang === 'en' ? 'Send' : 'إرسال';
+  if (voiceBtn) voiceBtn.textContent = lang === 'fr' ? '🎤 Parler' : lang === 'en' ? '🎤 Speak' : '🎤 تحدث';
+  if (examplesBtn) examplesBtn.textContent = lang === 'fr' ? '📋 Voir les exemples de questions' : lang === 'en' ? '📋 See sample questions' : '📋 عرض أمثلة الأسئلة';
+}
+traduireChatbotButtons(currentLang);
 
-    function goFromHereToHome() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const origin = `${lat},${lon}`;
-          const destination = encodeURIComponent("3 Avenue Joseph Bédier, 75013 Paris");
-          const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-          window.open(url, '_blank');
-        }, error => {
-          document.getElementById("gpsError").classList.remove("hidden");
-        });
-      } else {
-        document.getElementById("gpsError").classList.remove("hidden");
-      }
-    }
-  </script>
+function afficherQuestions() {
+  const questions = {
+    fr: ["J’ai de la fièvre", "Je tousse beaucoup", "J’ai oublié mes médicaments", "J’ai une douleur à la tête", "Est-ce que j’ai la grippe ?", "Je souffre d’allergie", "Ma tension est élevée"],
+    en: ["I have a fever", "I'm coughing a lot", "I forgot my medicine", "I have a headache", "Do I have the flu?", "I have allergies", "My blood pressure is high"],
+    ar: ["أعاني من الحمى", "أسعل كثيرًا", "نسيت دوائي", "أشعر بألم في رأسي", "هل لدي إنفلونزا؟", "أعاني من حساسية", "ضغط دمي مرتفع"]
+  };
+  const zone = document.getElementById("question-exemples");
+  const selected = questions[currentLang];
+  zone.innerHTML = `<ul style='padding-left: 20px; margin-top: 6px;'>${selected.map(q => `<li>${q}</li>`).join('')}</ul>`;
+  zone.style.display = zone.style.display === "none" ? "block" : "none";
+}
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('sw.js').then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
-
-
